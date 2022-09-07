@@ -1,8 +1,10 @@
-/*  Valve Cart and Feed System: Controls - Valve Controls - Full Asembly V 0.1
+/*  Valve Cart and Feed System: Controls - Valve Controls - Full Asembly 
+ * Version: 0.1 Date: NA
 *  Author(s):
 *  Logan Sewell
 *  JJ
 *  Organizarion: Uvic Rocketry
+*  Note: operational tempuarture for stepper motors used is between -10*C & 130*C
 */
 #include "AccelStepper.h" 
 #include "Valve.h"
@@ -51,13 +53,13 @@
 #define Mot7 44
 #define Igniter 45
 //****************************
-
+#define abortPin  6 
 
 //******Assining mottors******
 AccelStepper N2OF (1,StepMot1,DirMot1);
 AccelStepper N2OV (1,StepMot2,DirMot2);
-AccelStepper N2F (1,StepMot3,DirMot3);
-AccelStepper RTV (1,StepMot4,DirMot4);
+AccelStepper N2F (1,StepMot4,DirMot4);
+//AccelStepper RTV (1,StepMot4,DirMot4);
 AccelStepper EVV (1,StepMot5,DirMot5);
 AccelStepper MEV (1,StepMot6,DirMot6);
  //*************************
@@ -65,8 +67,8 @@ AccelStepper MEV (1,StepMot6,DirMot6);
  //Assining Valves (be sure to set proper oriention baied on mottor direction)
   Valve valve_N2OF = Valve(Lim1Mot1, Lim2Mot1);
   Valve valve_N2OV = Valve(Lim2Mot2, Lim1Mot2);
-  Valve valve_N2F  = Valve(Lim1Mot3, Lim2Mot3);
-  Valve valve_RTV  = Valve(Lim1Mot4, Lim2Mot4);
+  Valve valve_N2F  = Valve(Lim1Mot4, Lim2Mot4);
+  //Valve valve_RTV  = Valve(Lim1Mot4, Lim2Mot4);
   Valve valve_EVV  = Valve(Lim1Mot5, Lim2Mot5);
   Valve valve_MEV  = Valve(Lim1Mot6, Lim2Mot6);
   Valve valve_NCV  = Valve(Lim1NCV, Lim2NCV);
@@ -85,17 +87,17 @@ digitalWrite(mot6Enab,HIGH);
  N2OF.enableOutputs();
  N2OV.enableOutputs();
  N2F.enableOutputs();
- RTV.enableOutputs();
+// RTV.enableOutputs();
  EVV.enableOutputs();
  MEV.enableOutputs();
 
  
-  N2OF.moveTo(N2OF.currentPosition()+ s1*(50000000));
-  N2OV.moveTo(N2OV.currentPosition()+ s2*50000);
-  N2F.moveTo(N2F.currentPosition()  + s3*50000);
-  RTV.moveTo(RTV.currentPosition()  + s4*50000);
-  EVV.moveTo(EVV.currentPosition()  + s5*50000);
-  MEV.moveTo(MEV.currentPosition()  + s6*50000);
+  N2OF.moveTo(N2OF.currentPosition()+ s1*(-50000000));
+  N2OV.moveTo(N2OV.currentPosition()+ s2*(5000000));
+  N2F.moveTo(N2F.currentPosition()  + s3*(5000000));
+  //RTV.moveTo(RTV.currentPosition()  + s4*5000000);
+  EVV.moveTo(EVV.currentPosition()  + s5*5000000);
+  MEV.moveTo(MEV.currentPosition()  + s6*(-5000000));
   
   unsigned long temp = micros();
   //x is a time veriable used to regulate the step time of the mottors as they pulse
@@ -103,8 +105,9 @@ digitalWrite(mot6Enab,HIGH);
 
   //n is the repetition veriable that detects if any error has ocurred
   long n = 0;
+  //||valve_RTV.state()!= s4
   
-  while(n<50000 && (valve_N2OF.state()!= s1||valve_N2OV.state()!= s2||valve_N2F.state()!= s3||valve_RTV.state()!= s4||valve_EVV.state()!= s5||valve_MEV.state()!= s6)){
+  while(n<80000 && (valve_N2OF.state()!= s1||valve_N2OV.state()!= s2||valve_N2F.state()!= s3||valve_EVV.state()!= s5||valve_MEV.state()!= s6)){
   n++;
   temp = micros();
   
@@ -119,11 +122,11 @@ digitalWrite(mot6Enab,HIGH);
   if(valve_N2F.state()!= s3){
     N2F.run();
     }
-    
+  /*  
   if(valve_RTV.state()!= s4){
     RTV.run();
     }
-
+  */
   if(valve_EVV.state()!= s5){
     EVV.run();
   }
@@ -133,14 +136,14 @@ digitalWrite(mot6Enab,HIGH);
   }
     
   }
-  
-  if(valve_N2OF.state()!= s1||valve_N2OV.state()!= s2||valve_N2F.state()!= s3||valve_RTV.state()!= s4||valve_EVV.state()!= s5||valve_MEV.state()!= s6){
+  //||valve_RTV.state()!= s4
+  if(valve_N2OF.state()!= s1||valve_N2OV.state()!= s2||valve_N2F.state()!= s3||valve_EVV.state()!= s5||valve_MEV.state()!= s6){
   
       Serial.print("VCA,ER" );
       Serial.print(",N2OF," + valve_N2OF.strState());
       Serial.print(",N2OV," + valve_N2OV.strState());
       Serial.print(",N2F," + valve_N2F.strState());
-      Serial.print(",RTV," + valve_RTV.strState());
+      //Serial.print(",RTV," + valve_RTV.strState());
       Serial.print(",EVV," + valve_EVV.strState());
       Serial.print(",MEV," + valve_MEV.strState());
       Serial.print(",NCV," + valve_NCV.strState());
@@ -149,7 +152,7 @@ digitalWrite(mot6Enab,HIGH);
  N2OF.disableOutputs();
  N2OV.disableOutputs();
  N2F.disableOutputs();
- RTV.disableOutputs();
+// RTV.disableOutputs();
  EVV.disableOutputs();
  MEV.disableOutputs();
  
@@ -254,9 +257,11 @@ digitalWrite(mot6Enab,HIGH);
       }
       
       //************** Valve 6 *********************
+    //cur = strlen(Buffer.readStringUntil("MEV,"));
+    while(Command != "MEV"){
     Command = readSerial(cur, Buffer);
     cur += Command.length() + 1;
-    
+    }
     Command = readSerial(cur, Buffer);
     cur += Command.length() + 1;
     int V6 = 0;
@@ -284,14 +289,14 @@ digitalWrite(mot6Enab,HIGH);
       }else{
        //Serial.println("Error Incorect imput 6: [" + Command + "]");
       }
-      
-      setState(V1, V2, V3, V4, V5, V6);
+     //Serial.print(String(V1)+String(V2)+String(V3));
+     setState(V1, V2, V3, V4, V5, V6);
 
       Serial.print("VCA,FD" );
       Serial.print(",N2OF," + valve_N2OF.strState());
       Serial.print(",N2OV," + valve_N2OV.strState());
       Serial.print(",N2F," + valve_N2F.strState());
-      Serial.print(",RTV," + valve_RTV.strState());
+//      Serial.print(",RTV," + valve_RTV.strState());
       Serial.print(",EVV," + valve_EVV.strState());
       Serial.print(",MEV," + valve_MEV.strState());
       Serial.print(",NCV," + valve_NCV.strState());
@@ -300,6 +305,9 @@ digitalWrite(mot6Enab,HIGH);
   
     
 void setup() {
+ //Abort pin
+  pinMode(abortPin, INPUT_PULLUP);
+  
  // Sets Limmit Pins
   pinMode(Lim1Mot1, INPUT_PULLUP);
   pinMode(Lim2Mot1, INPUT_PULLUP);
@@ -339,21 +347,21 @@ void setup() {
   digitalWrite(mot6Enab,LOW);
   
  // Set Driver Pins
-  N2OF.setMaxSpeed(450.0);
+  N2OF.setMaxSpeed(255.0);
   N2OF.setAcceleration(5000.0);
   N2OF.setEnablePin(mot1Enab);
 
-  N2OV.setMaxSpeed(1000.0);
-  N2OV.setAcceleration(2000.0);
+  N2OV.setMaxSpeed(1100.0);
+  N2OV.setAcceleration(5000.0);
   N2OV.setEnablePin(mot2Enab);
 
-  N2F.setMaxSpeed(450.0);
-  N2F.setAcceleration(5000.0);
+  N2F.setMaxSpeed(250.0);
+  N2F.setAcceleration(10000.0);
   N2F.setEnablePin(mot3Enab);
 
-  RTV.setMaxSpeed(400.0);
-  RTV.setAcceleration(5000.0);
-  RTV.setEnablePin(mot4Enab);
+//  RTV.setMaxSpeed(400.0);
+//  RTV.setAcceleration(5000.0);
+// RTV.setEnablePin(mot4Enab);
 
   EVV.setMaxSpeed(240.0);
   EVV.setAcceleration(5000.0);
@@ -376,15 +384,16 @@ void setup() {
  //*********************************************
  
  //Auto_Home(On Start up)
- Serial.println("VCA,CF,Initalizing_to_safe_state:(Not_Implimented)");
-  //setState(1 ,1 ,1 ,1 ,1, 1);
+ Serial.println("VCA,CF,Initalizing_to_safe_state");
+  setState(1 ,-1 ,1 ,0 ,-1, 1);
+  //setState(1 ,0 ,1 ,0 ,-1, 1);
   digitalWrite(Mot7,LOW);
 
   Serial.print("VCA,FD" );
   Serial.print(",N2OF," + valve_N2OF.strState());
   Serial.print(",N2OV," + valve_N2OV.strState());
   Serial.print(",N2F," + valve_N2F.strState());
-  Serial.print(",RTV," + valve_RTV.strState());
+//  Serial.print(",RTV," + valve_RTV.strState());
   Serial.print(",EVV," + valve_EVV.strState());
   Serial.print(",MEV," + valve_MEV.strState());
   Serial.print(",NCV," + valve_NCV.strState());
@@ -396,9 +405,31 @@ void setup() {
 
  
 void loop() {
+  /*
+ while(digitalRead(abortPin) == HIGH){
+       digitalWrite(Igniter,LOW);
+     
+     //fail state will be hard coded for safty purpoes
+     
+     digitalWrite(Mot7,LOW);
+     setState(1 ,-1 ,1 ,0 ,-1, 1);
+     
+  
+      Serial.print("VCA,FD" );
+      Serial.print(",N2OF," + valve_N2OF.strState());
+      Serial.print(",N2OV," + valve_N2OV.strState());
+      Serial.print(",N2F," + valve_N2F.strState());
+//      Serial.print(",RTV," + valve_RTV.strState());
+      Serial.print(",EVV," + valve_EVV.strState());
+      Serial.print(",MEV," + valve_MEV.strState());
+      Serial.print(",NCV," + valve_NCV.strState());
+      Serial.println("");
+      while(1 == 1){Serial.println("VCA,FD,ABORT");}}
+*/
+  
  Serial.flush();
  //Finding Valve limit oriention: Test pouposes olnly
-  /*
+ /*
   Serial.println("Limit1: "+String(digitalRead(Lim1Mot1))+" Limit 2: "+String(digitalRead(Lim2Mot1)));
   Serial.println("Limit1: "+String(digitalRead(Lim1Mot2))+" Limit 2: "+String(digitalRead(Lim2Mot2)));
   Serial.println("Limit1: "+String(digitalRead(Lim1Mot3))+" Limit 2: "+String(digitalRead(Lim2Mot3)));
@@ -425,6 +456,26 @@ void loop() {
     }
   
   */ 
+   while(digitalRead(abortPin) == HIGH){
+       digitalWrite(Igniter,LOW);
+     
+     //fail state will be hard coded for safty purpoes
+     
+     digitalWrite(Mot7,LOW);
+     setState(1 ,-1 ,1 ,0 ,-1, 1);
+     //setState(0 ,0 ,1 ,0 ,-1, 1);
+  
+      Serial.print("VCA,FD" );
+      Serial.print(",N2OF," + valve_N2OF.strState());
+      Serial.print(",N2OV," + valve_N2OV.strState());
+      Serial.print(",N2F," + valve_N2F.strState());
+//      Serial.print(",RTV," + valve_RTV.strState());
+      Serial.print(",EVV," + valve_EVV.strState());
+      Serial.print(",MEV," + valve_MEV.strState());
+      Serial.print(",NCV," + valve_NCV.strState());
+      Serial.println("");
+      while(1 == 1){Serial.println("VCA,FD,ABORT");}}
+      
   }
   
  //****************I'm sure this is here for a reason**
@@ -449,18 +500,19 @@ void loop() {
      //fail state will be hard coded for safty purpoes
      
      digitalWrite(Mot7,LOW);
-     setState(0, 0, 0, 0, 0, 0);
+     setState(1 ,-1 ,1 ,0 ,-1, 1);
      
   
       Serial.print("VCA,FD" );
       Serial.print(",N2OF," + valve_N2OF.strState());
       Serial.print(",N2OV," + valve_N2OV.strState());
       Serial.print(",N2F," + valve_N2F.strState());
-      Serial.print(",RTV," + valve_RTV.strState());
+//      Serial.print(",RTV," + valve_RTV.strState());
       Serial.print(",EVV," + valve_EVV.strState());
       Serial.print(",MEV," + valve_MEV.strState());
       Serial.print(",NCV," + valve_NCV.strState());
       Serial.println("");
+      while(1 == 1){Serial.println("VCA,FD,ABORT");}
       
    //*******************IGNITE-Comand*******************
    }else if(Command.compareTo("IGNITE") == 0){
@@ -471,7 +523,7 @@ void loop() {
    }else if(Command.compareTo("CD") == 0) {
     digitalWrite(Igniter,LOW);
     Serial.println("VCA,CF,CD");
-      setSerial(cur, Buffer);
+    setSerial(cur, Buffer);
 
    //*******************Test-Comands*******************
    }else if(Command.compareTo("Open") == 0){
@@ -489,6 +541,6 @@ void loop() {
 
     //*******************Catch-all******************* 
    }else{
-    Serial.println("VCA,ER,Error:Incorect imput");
+    Serial.println("VCA,ER,Error:Incorect_Imput");
    }
  }

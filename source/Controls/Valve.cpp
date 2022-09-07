@@ -19,11 +19,11 @@
 
     String Valve::strState(){
       if(digitalRead(upperBound) == LOW){
-        return "Open";
+        return "OPEN";
       }else if(digitalRead(lowerBound) == LOW){
-        return "Closed";
+        return "CLOSE";
       }else{
-        return "Unknown";
+        return "UNKOWN";
         }
       }
 
