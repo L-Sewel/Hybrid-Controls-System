@@ -1,5 +1,5 @@
-/*  Valve Cart and Feed System: Controls - Valve Controls - Full Asembly 
- * Version: 0.1 Date: NA
+ /*  Valve Cart and Feed System: Controls - Valve Controls - Full Asembly 
+ * Version: 1.0 Date: 02/10/2023
 *  Author(s):
 *  Logan Sewell
 *  JJ
@@ -10,93 +10,68 @@
 #include "Valve.h"
 
 //*********Limit Pins*********
-#define Lim1Mot1 42
-#define Lim2Mot1 43
+#define Lim1Mot6 31
+#define Lim2Mot6 30
 #define Lim1Mot2 41
 #define Lim2Mot2 40
 #define Lim1Mot3 39
 #define Lim2Mot3 38
-#define Lim1Mot4 36
-#define Lim2Mot4 37
+#define Lim1Mot4 43
+#define Lim2Mot4 42
 #define Lim1Mot5 35
 #define Lim2Mot5 34
-#define Lim1Mot6 33
-#define Lim2Mot6 32
-#define Lim1NCV 30
-#define Lim2NCV 31
+#define Lim1Mot1 33
+#define Lim2Mot1 32
+#define Lim1NCV 29
+#define Lim2NCV 28
 //****************************
 
-//******Enable Pins **********
-#define mot1Enab 46
-#define mot2Enab 47
-#define mot3Enab 48
-#define mot4Enab 49
-#define mot5Enab 50
-#define mot6Enab 51
-
 //*********Driver Pins********
-#define StepMot1 3 
-#define DirMot1  2 
-#define StepMot2 5 
-#define DirMot2  4 
-#define StepMot3 7 
-#define DirMot3  6 
-#define StepMot4 9 
-#define DirMot4  8 
-#define StepMot5 11 
-#define DirMot5  10
-#define StepMot6 27 
-#define DirMot6  26
+#define StepMot6 19
+#define DirMot6  18
+#define StepMot2 8 
+#define DirMot2  7 
+#define StepMot4 10 
+#define DirMot4  9
+#define StepMot5 15 
+#define DirMot5  14
+#define StepMot1 17 
+#define DirMot1  16
 //****************************
 
 //solonoid and ignitor pin aclocation
-#define Mot7 44
-#define Igniter 45
+#define NCV 44
+#define Igniter 46
+#define RTV 45
 //****************************
 #define abortPin  6 
+#define keySwich  3 
 
 //******Assining mottors******
 AccelStepper N2OF (1,StepMot1,DirMot1);
 AccelStepper N2OV (1,StepMot2,DirMot2);
 AccelStepper N2F (1,StepMot4,DirMot4);
-//AccelStepper RTV (1,StepMot4,DirMot4);
 AccelStepper EVV (1,StepMot5,DirMot5);
 AccelStepper MEV (1,StepMot6,DirMot6);
  //*************************
 
  //Assining Valves (be sure to set proper oriention baied on mottor direction)
   Valve valve_N2OF = Valve(Lim1Mot1, Lim2Mot1);
-  Valve valve_N2OV = Valve(Lim2Mot2, Lim1Mot2);
+  Valve valve_N2OV = Valve(Lim1Mot2, Lim2Mot2);
+  Valve valve_RTV = Valve(Lim2Mot3, Lim1Mot3);
   Valve valve_N2F  = Valve(Lim1Mot4, Lim2Mot4);
-  //Valve valve_RTV  = Valve(Lim1Mot4, Lim2Mot4);
-  Valve valve_EVV  = Valve(Lim1Mot5, Lim2Mot5);
+  Valve valve_EVV  = Valve(Lim2Mot5, Lim1Mot5);
   Valve valve_MEV  = Valve(Lim1Mot6, Lim2Mot6);
   Valve valve_NCV  = Valve(Lim1NCV, Lim2NCV);
  
  //*********************
 
 void setState(int s1, int s2, int s3, int s4, int s5, int s6){
-digitalWrite(mot1Enab,HIGH);
-digitalWrite(mot2Enab,HIGH);
-digitalWrite(mot3Enab,HIGH);
-digitalWrite(mot4Enab,HIGH);
-digitalWrite(mot5Enab,HIGH);
-digitalWrite(mot6Enab,HIGH);
-
  
- N2OF.enableOutputs();
- N2OV.enableOutputs();
- N2F.enableOutputs();
-// RTV.enableOutputs();
- EVV.enableOutputs();
- MEV.enableOutputs();
-
- 
-  N2OF.moveTo(N2OF.currentPosition()+ s1*(-50000000));
-  N2OV.moveTo(N2OV.currentPosition()+ s2*(5000000));
-  N2F.moveTo(N2F.currentPosition()  + s3*(5000000));
-  //RTV.moveTo(RTV.currentPosition()  + s4*5000000);
-  EVV.moveTo(EVV.currentPosition()  + s5*5000000);
+  N2OF.moveTo(N2OF.currentPosition()+ s1*(50000000));
+  N2OV.moveTo(N2OV.currentPosition()+ s2*(-5000000));
+  N2F.moveTo(N2F.currentPosition()  + s3*(-5000000));
+  EVV.moveTo(EVV.currentPosition()  + s5*(-5000000));
   MEV.moveTo(MEV.currentPosition()  + s6*(-5000000));
   
   unsigned long temp = micros();
@@ -105,9 +80,8 @@ digitalWrite(mot6Enab,HIGH);
 
   //n is the repetition veriable that detects if any error has ocurred
   long n = 0;
-  //||valve_RTV.state()!= s4
   
-  while(n<80000 && (valve_N2OF.state()!= s1||valve_N2OV.state()!= s2||valve_N2F.state()!= s3||valve_EVV.state()!= s5||valve_MEV.state()!= s6)){
+  while(n<100000 && (valve_N2OF.state()!= s1||valve_N2OV.state()!= s2||valve_N2F.state()!= s3||valve_EVV.state()!= s5||valve_MEV.state()!= s6)){
   n++;
   temp = micros();
   
@@ -122,11 +96,7 @@ digitalWrite(mot6Enab,HIGH);
   if(valve_N2F.state()!= s3){
     N2F.run();
     }
-  /*  
-  if(valve_RTV.state()!= s4){
-    RTV.run();
-    }
-  */
+
   if(valve_EVV.state()!= s5){
     EVV.run();
   }
@@ -136,30 +106,22 @@ digitalWrite(mot6Enab,HIGH);
   }
     
   }
-  //||valve_RTV.state()!= s4
   if(valve_N2OF.state()!= s1||valve_N2OV.state()!= s2||valve_N2F.state()!= s3||valve_EVV.state()!= s5||valve_MEV.state()!= s6){
   
-      Serial.print("VCA,ER" );
+      Serial.print("VCA,ES" );
       Serial.print(",N2OF," + valve_N2OF.strState());
       Serial.print(",N2OV," + valve_N2OV.strState());
+      Serial.print(",RTV," + valve_RTV.strState());
       Serial.print(",N2F," + valve_N2F.strState());
-      //Serial.print(",RTV," + valve_RTV.strState());
       Serial.print(",EVV," + valve_EVV.strState());
       Serial.print(",MEV," + valve_MEV.strState());
       Serial.print(",NCV," + valve_NCV.strState());
       Serial.println("");
   }
- N2OF.disableOutputs();
- N2OV.disableOutputs();
- N2F.disableOutputs();
-// RTV.disableOutputs();
- EVV.disableOutputs();
- MEV.disableOutputs();
- 
   }
   
   //***********************Reads-Searial-Values-one-comand-at-a-time***********
-  //reades a String in serial comunication format and reads the next command
+  //Reads the formmated string form a serial comunication & returns the next command
   String readSerial(int cur, String Buffer){
     if(cur > Buffer.length()){
       return "Error:_End_of_String";
@@ -193,7 +155,8 @@ digitalWrite(mot6Enab,HIGH);
       }else if (Command.compareTo("CLOSE") == 0){
       V1 = 1; 
       }else{
-         //Serial.println("Error Incorect imput 1: [" + Command + "]");
+         Serial.println("VCA,ER,Error:Incorect_Imput");
+         return;
         }
    
     //************** Valve 2 *********************
@@ -208,7 +171,8 @@ digitalWrite(mot6Enab,HIGH);
      }else if (Command.compareTo("CLOSE") == 0){
       V2 = 1; 
       }else{
-         //Serial.println("Error Incorect imput 2: [" + Command + "]");
+         Serial.println("VCA,ER,Error:Incorect_Imput");
+         return;
       }
 
     //************** Valve 3 *********************
@@ -219,11 +183,14 @@ digitalWrite(mot6Enab,HIGH);
     cur += Command.length() + 1;
     int V3 = 0;
     if(Command.compareTo("OPEN") == 0){
+      digitalWrite(RTV,LOW);
       V3 = -1;
       }else if (Command.compareTo("CLOSE") == 0){
+      digitalWrite(RTV,LOW);
       V3 = 1; 
       }else{
-       //Serial.println("Error Incorect imput 3: [" + Command + "]");
+         Serial.println("VCA,ER,Error:Incorect_Imput");
+         return;
       }
       
       //************** Valve 4 *********************
@@ -238,7 +205,8 @@ digitalWrite(mot6Enab,HIGH);
       }else if (Command.compareTo("CLOSE") == 0){
         V4 = 1; 
       }else{
-        //Serial.println("Error Incorect imput 4: [" + Command + "]");
+        Serial.println("VCA,ER,Error:Incorect_Imput");
+        return;
       }
 
     //************** Valve 5 *********************
@@ -253,7 +221,8 @@ digitalWrite(mot6Enab,HIGH);
       }else if (Command.compareTo("CLOSE") == 0){
       V5 = 1; 
       }else{
-       //Serial.println("Error Incorect imput 5: [" + Command + "]");
+       Serial.println("VCA,ER,Error:Incorect_Imput");
+       return;
       }
       
       //************** Valve 6 *********************
@@ -270,7 +239,8 @@ digitalWrite(mot6Enab,HIGH);
       }else if (Command.compareTo("CLOSE") == 0){
       V6 = 1; 
       }else{
-       //Serial.println("Error Incorect imput 6: [" + Command + "]");
+       Serial.println("VCA,ER,Error:Incorect_Imput");
+       return;
       }
 
       //************** Valve 7 *********************
@@ -282,14 +252,15 @@ digitalWrite(mot6Enab,HIGH);
     int V7 = 0;
     if(Command.compareTo("OPEN") == 0){
       V7 = -1;
-      digitalWrite(Mot7,HIGH);
+      digitalWrite(NCV,HIGH);
       }else if (Command.compareTo("CLOSE") == 0){
       V7 = 1;
-      digitalWrite(Mot7,LOW);
+      digitalWrite(NCV,LOW);
       }else{
-       //Serial.println("Error Incorect imput 6: [" + Command + "]");
+       Serial.println("VCA,ER,Error:Incorect_Imput");
+       return;
       }
-     //Serial.print(String(V1)+String(V2)+String(V3));
+     
      setState(V1, V2, V3, V4, V5, V6);
 
       Serial.print("VCA,FD" );
@@ -330,50 +301,25 @@ void setup() {
   pinMode(Lim1NCV, INPUT_PULLUP);
   pinMode(Lim2NCV, INPUT_PULLUP);
  //*********************************************
- //enable set up
- pinMode(mot1Enab,OUTPUT); 
- pinMode(mot2Enab,OUTPUT); 
- pinMode(mot3Enab,OUTPUT); 
- pinMode(mot4Enab,OUTPUT); 
- pinMode(mot5Enab,OUTPUT); 
- pinMode(mot6Enab,OUTPUT);  
-
- //initalize all drivers to off:
-  digitalWrite(mot1Enab,LOW);
-  digitalWrite(mot2Enab,LOW);
-  digitalWrite(mot3Enab,LOW);
-  digitalWrite(mot4Enab,LOW);
-  digitalWrite(mot5Enab,LOW);
-  digitalWrite(mot6Enab,LOW);
-  
+ 
  // Set Driver Pins
-  N2OF.setMaxSpeed(255.0);
+  N2OF.setMaxSpeed(250.0);
   N2OF.setAcceleration(5000.0);
-  N2OF.setEnablePin(mot1Enab);
 
   N2OV.setMaxSpeed(1100.0);
-  N2OV.setAcceleration(5000.0);
-  N2OV.setEnablePin(mot2Enab);
+  N2OV.setAcceleration(10000.0);
 
-  N2F.setMaxSpeed(250.0);
+  N2F.setMaxSpeed(400.0);
   N2F.setAcceleration(10000.0);
-  N2F.setEnablePin(mot3Enab);
 
-//  RTV.setMaxSpeed(400.0);
-//  RTV.setAcceleration(5000.0);
-// RTV.setEnablePin(mot4Enab);
-
-  EVV.setMaxSpeed(240.0);
+  EVV.setMaxSpeed(400.0);
   EVV.setAcceleration(5000.0);
-  EVV.setEnablePin(mot5Enab);
 
-  MEV.setMaxSpeed(280.0);
-  MEV.setAcceleration(5000.0);
-  MEV.setEnablePin(mot6Enab);
-
-
+  MEV.setMaxSpeed (40.0);
+  MEV.setAcceleration(50000.0);
   
-  pinMode(Mot7,OUTPUT);
+  pinMode(NCV,OUTPUT);
+  pinMode(RTV,OUTPUT);
   pinMode(Igniter,OUTPUT); 
   digitalWrite(Igniter,LOW);
   //********************
@@ -385,9 +331,9 @@ void setup() {
  
  //Auto_Home(On Start up)
  Serial.println("VCA,CF,Initalizing_to_safe_state");
-  setState(1 ,-1 ,1 ,0 ,-1, 1);
+  //setState(1 ,-1 ,1 ,0 ,-1, 1);
   //setState(1 ,0 ,1 ,0 ,-1, 1);
-  digitalWrite(Mot7,LOW);
+  digitalWrite(NCV,LOW);
 
   Serial.print("VCA,FD" );
   Serial.print(",N2OF," + valve_N2OF.strState());
@@ -411,7 +357,7 @@ void loop() {
      
      //fail state will be hard coded for safty purpoes
      
-     digitalWrite(Mot7,LOW);
+     digitalWrite(NCV,LOW);
      setState(1 ,-1 ,1 ,0 ,-1, 1);
      
   
@@ -429,7 +375,7 @@ void loop() {
   
  Serial.flush();
  //Finding Valve limit oriention: Test pouposes olnly
- /*
+
   Serial.println("Limit1: "+String(digitalRead(Lim1Mot1))+" Limit 2: "+String(digitalRead(Lim2Mot1)));
   Serial.println("Limit1: "+String(digitalRead(Lim1Mot2))+" Limit 2: "+String(digitalRead(Lim2Mot2)));
   Serial.println("Limit1: "+String(digitalRead(Lim1Mot3))+" Limit 2: "+String(digitalRead(Lim2Mot3)));
@@ -437,7 +383,6 @@ void loop() {
   Serial.println("Limit1: "+String(digitalRead(Lim1Mot5))+" Limit 2: "+String(digitalRead(Lim2Mot5)));
   Serial.println("Limit1: "+String(digitalRead(Lim1Mot6))+" Limit 2: "+String(digitalRead(Lim2Mot6)));
   Serial.println("Limit1: "+String(digitalRead(Lim1NCV))+" Limit 2: "+String(digitalRead(Lim2NCV)));  
-  */
   
  //*******************Waits for serial imput*******************
   unsigned long Timeout = millis();
@@ -461,7 +406,7 @@ void loop() {
      
      //fail state will be hard coded for safty purpoes
      
-     digitalWrite(Mot7,LOW);
+     digitalWrite(NCV,LOW);
      setState(1 ,-1 ,1 ,0 ,-1, 1);
      //setState(0 ,0 ,1 ,0 ,-1, 1);
   
@@ -499,7 +444,7 @@ void loop() {
      
      //fail state will be hard coded for safty purpoes
      
-     digitalWrite(Mot7,LOW);
+     digitalWrite(NCV,LOW);
      setState(1 ,-1 ,1 ,0 ,-1, 1);
      
   
@@ -529,14 +474,14 @@ void loop() {
    }else if(Command.compareTo("Open") == 0){
     //setSerial(); //make a function that reads searial and sets the requested state.
     
-    setState(-1, -1, -1, 0, -1, -1);
-    digitalWrite(Mot7,HIGH);
+    setState(-1, 1, -1, 1, -1, -1);
+    digitalWrite(NCV,HIGH);
     
    
    }else if(Command.compareTo("Close") == 0){
     
-    setState(1, 1, 1, 0, 1, 1);
-    digitalWrite(Mot7,LOW);
+    setState(1, -1, 1, -1, 1, 1);
+    digitalWrite(NCV,LOW);
     
 
     //*******************Catch-all******************* 
